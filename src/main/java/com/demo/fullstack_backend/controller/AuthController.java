@@ -1,38 +1,61 @@
 package com.demo.fullstack_backend.controller;
 
+import com.demo.fullstack_backend.model.AuthUser;
+import com.demo.fullstack_backend.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.demo.fullstack_backend.model.AuthUser;
-//import com.demo.fullstack_backend.repository.AuthUserRepository;
-import com.demo.fullstack_backend.service.AuthService;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
 
+    // Create User
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody AuthUser user) {
+    public ResponseEntity<AuthUser> registerUser(@RequestBody AuthUser user) {
         return ResponseEntity.ok(authService.register(user));
     }
 
+    // Login User
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthUser user) {
+    public ResponseEntity<String> login(@RequestBody AuthUser user) {
         boolean isValid = authService.login(user.getUsername(), user.getPassword());
 
         if (isValid) {
-			return ResponseEntity.ok("SUCCESS");
-		}
+            return ResponseEntity.ok("Login Successful");
+        }
+        return ResponseEntity.status(401).body("Invalid Username or Password");
+    }
 
-        return ResponseEntity.status(401).body("FAIL");
+    // Get All Users
+    @GetMapping("/users")
+    public ResponseEntity<List<AuthUser>> getAllUsers() {
+        return ResponseEntity.ok(authService.getAllUsers());
+    }
+
+    // Get User By ID
+    @GetMapping("/users/{id}")
+    public ResponseEntity<AuthUser> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(authService.getUserById(id));
+    }
+
+    // Update User
+    @PutMapping("/users/{id}")
+    public ResponseEntity<AuthUser> updateUser(@PathVariable Long id,
+                                               @RequestBody AuthUser updatedUser) {
+        return ResponseEntity.ok(authService.updateUser(id, updatedUser));
+    }
+
+    // Delete User
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        authService.deleteUser(id);
+        return ResponseEntity.ok("User deleted successfully");
     }
 }
